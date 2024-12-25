@@ -1,0 +1,93 @@
+Singleton Pattern
+উদ্দেশ্য: একটি ক্লাসের শুধুমাত্র একটি ইনস্ট্যান্স তৈরি নিশ্চিত করে এবং গ্লোবাল অ্যাক্সেস প্রদান করে।
+ব্যবহার: ডেটাবেস কানেকশন বা কনফিগারেশন সেটিংস ম্যানেজ করতে।
+
+The Singleton Pattern একটি ডিজাইন প্যাটার্ন যা নিশ্চিত করে যে কোনো ক্লাসের শুধুমাত্র একটি ইনস্ট্যান্স তৈরি হবে এবং এই ইনস্ট্যান্সে গ্লোবাল অ্যাক্সেস প্রদান করা হবে। এটি এমন পরিস্থিতিতে ব্যবহৃত হয় যেখানে একটি অবজেক্ট বা রিসোর্স শেয়ার করা দরকার এবং একাধিক ইনস্ট্যান্স তৈরি হওয়া সমস্যা তৈরি করতে পারে।
+
+Singleton Pattern-এর বৈশিষ্ট্য:
+একক ইনস্ট্যান্স: ক্লাসের শুধুমাত্র একটি ইনস্ট্যান্স তৈরি হবে।
+গ্লোবাল অ্যাক্সেস: এই ইনস্ট্যান্স অ্যাপ্লিকেশনের যেকোনো স্থানে ব্যবহার করা যাবে।
+লেজি লোডিং: ইনস্ট্যান্স তখনই তৈরি হবে যখন এটি প্রথমবার প্রয়োজন হবে।
+
+কোথায় Singleton Pattern ব্যবহার করা হয়?
+ডাটাবেস কানেকশন ম্যানেজ করা: একটি ডাটাবেস কানেকশন শেয়ার করতে।
+লগ ম্যানেজার: অ্যাপ্লিকেশনের সকল লগ এক জায়গায় জমা করতে।
+ক্যাশ ম্যানেজমেন্ট: একক অবজেক্ট ব্যবহার করে ক্যাশ পরিচালনা করতে।
+
+Singleton Pattern বাস্তব জীবনে কোড উদাহরণ
+ধরা যাক আমরা একটি ডাটাবেস কানেকশন ম্যানেজ করতে চাই:
+    <?php
+
+    class Database {
+        // Static property to hold the single instance
+        private static $instance = null;
+
+        // Private property for the database connection
+        private $connection;
+
+        // Private constructor to prevent direct object creation
+        private function __construct() {
+            try {
+                $this->connection = new PDO(
+                    "mysql:host=localhost;dbname=testdb",
+                    "root",
+                    ""
+                );
+                $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                die("Database Connection Failed: " . $e->getMessage());
+            }
+        }
+
+        // Prevent cloning of the instance
+        private function __clone() {}
+
+        // Prevent unserialization of the instance
+        private function __wakeup() {}
+
+        // Static method to get the single instance
+        public static function getInstance() {
+            if (self::$instance === null) {
+                self::$instance = new Database();
+            }
+            return self::$instance;
+        }
+
+        // Method to get the database connection
+        public function getConnection() {
+            return $this->connection;
+        }
+    }
+
+    // Usage Example:
+
+    // Get the singleton instance of the Database
+    $db1 = Database::getInstance();
+    $db2 = Database::getInstance();
+
+    // Verify that both instances are the same
+    if ($db1 === $db2) {
+        echo "Singleton works! Both variables hold the same instance.\n";
+    }
+
+    // Use the database connection
+    $conn = $db1->getConnection();
+
+    // Run a query (example)
+    $query = $conn->query("SELECT * FROM users");
+    $results = $query->fetchAll(PDO::FETCH_ASSOC);
+    print_r($results);
+
+    ?>
+
+
+বড় প্রজেক্টে ব্যবহারের সময় বিষয়গুলো খেয়াল রাখুন:
+Thread Safety:
+
+যদি আপনার অ্যাপ্লিকেশন মাল্টি-থ্রেডেড হয়, তখন Singleton Thread Safe হওয়া দরকার।
+Dependency Injection Avoidance:
+
+Singleton প্যাটার্ন সরাসরি ক্লাসের নির্ভরতা পরিচালনা করে, যা DI-এর বিপরীত। এটি বড় প্রজেক্টে সমস্যা তৈরি করতে পারে।
+Testing:
+
+Singleton প্যাটার্ন ইউনিট টেস্টে মক অবজেক্ট তৈরি করা কঠিন করতে পারে। তাই সাবধানে ব্যবহার করুন।

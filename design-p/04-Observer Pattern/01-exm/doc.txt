@@ -1,0 +1,159 @@
+### **Observer Pattern: বিস্তারিত ধারণা**  
+**Observer Pattern** একটি **behavioral design pattern**, যেখানে একটি অবজেক্ট (Subject) পরিবর্তিত হলে তার সাথে সংযুক্ত অন্যান্য অবজেক্টগুলো (Observers) স্বয়ংক্রিয়ভাবে নোটিফাই হয় এবং আপডেট হয়। এটি এমন ক্ষেত্রে ব্যবহৃত হয়, যেখানে একাধিক অবজেক্টের state একটি অবজেক্টের state এর উপর নির্ভর করে।
+
+---
+
+### **কীভাবে কাজ করে:**
+1. **Subject (Observable):**  
+   এটি সেই ক্লাস, যা অন্য অবজেক্টকে তার পরিবর্তন সম্পর্কে জানায়। এটি অবজারভারদের একটি তালিকা মেইনটেইন করে এবং তাদের নোটিফাই করার দায়িত্ব পালন করে।
+
+2. **Observer:**  
+   এটি সেই অবজেক্ট, যা **Subject** থেকে নোটিফিকেশন পায় এবং প্রয়োজন অনুযায়ী রেসপন্স করে।
+
+---
+
+### **বাস্তব জীবনের উদাহরণ:**  
+ধরা যাক, একটি ই-কমার্স সাইটে কোনো পণ্যের দাম কমলে, সেই পণ্যের সাথে সাবস্ক্রাইব করা ইউজারদের ইমেল বা এসএমএসের মাধ্যমে জানানো হবে।  
+
+---
+
+### **PHP কোড উদাহরণ: Product Price Notification System**
+
+```php
+<?php
+
+// Observer Interface
+interface Observer {
+    public function update($message);
+}
+
+// Subject (Observable) Interface
+interface Subject {
+    public function attach(Observer $observer);
+    public function detach(Observer $observer);
+    public function notify();
+}
+
+// Concrete Subject: Product
+class Product implements Subject {
+    private $observers = [];
+    private $name;
+    private $price;
+
+    public function __construct($name, $price) {
+        $this->name = $name;
+        $this->price = $price;
+    }
+
+    // Attach an observer
+    public function attach(Observer $observer) {
+        $this->observers[] = $observer;
+    }
+
+    // Detach an observer
+    public function detach(Observer $observer) {
+        $this->observers = array_filter($this->observers, function ($obs) use ($observer) {
+            return $obs !== $observer;
+        });
+    }
+
+    // Notify all observers
+    public function notify() {
+        foreach ($this->observers as $observer) {
+            $observer->update("The price of {$this->name} has changed to {$this->price}.");
+        }
+    }
+
+    // Set new price
+    public function setPrice($price) {
+        $this->price = $price;
+        $this->notify();
+    }
+}
+
+// Concrete Observer: EmailNotifier
+class EmailNotifier implements Observer {
+    private $email;
+
+    public function __construct($email) {
+        $this->email = $email;
+    }
+
+    public function update($message) {
+        echo "Email sent to {$this->email}: {$message}\n";
+    }
+}
+
+// Concrete Observer: SMSNotifier
+class SMSNotifier implements Observer {
+    private $phone;
+
+    public function __construct($phone) {
+        $this->phone = $phone;
+    }
+
+    public function update($message) {
+        echo "SMS sent to {$this->phone}: {$message}\n";
+    }
+}
+
+// Usage Example:
+
+// Create a product
+$product = new Product("Laptop", 1000);
+
+// Add observers
+$emailNotifier = new EmailNotifier("user1@example.com");
+$smsNotifier = new SMSNotifier("1234567890");
+
+$product->attach($emailNotifier);
+$product->attach($smsNotifier);
+
+// Change product price
+$product->setPrice(900); // Notifies all observers
+
+// Detach an observer and change price again
+$product->detach($emailNotifier);
+$product->setPrice(800); // Only SMS notifier will be notified
+```
+
+---
+
+### **আউটপুট:**
+```
+Email sent to user1@example.com: The price of Laptop has changed to 900.
+SMS sent to 1234567890: The price of Laptop has changed to 900.
+SMS sent to 1234567890: The price of Laptop has changed to 800.
+```
+
+---
+
+### **কোড বিশ্লেষণ:**
+1. **Observer Interface:**  
+   - `update($message)` মেথডটি ইমপ্লিমেন্ট করতে হবে, যাতে অবজারভাররা নোটিফিকেশন পায়।  
+
+2. **Concrete Observers:**  
+   - `EmailNotifier` এবং `SMSNotifier` তাদের নিজস্ব লজিক দিয়ে **update** মেথড ইমপ্লিমেন্ট করেছে।  
+
+3. **Subject (Product):**  
+   - এটি অবজারভারদের মেইনটেইন করে এবং `setPrice()` মেথডের মাধ্যমে নোটিফাই করে।  
+
+4. **Detach:**  
+   - এটি কোনো নির্দিষ্ট অবজারভারকে সরিয়ে ফেলার সুযোগ দেয়।  
+
+---
+
+### **বাস্তব জীবনে ব্যবহারের ক্ষেত্র:**
+1. **ই-কমার্স সিস্টেম:**  
+   - পণ্যের স্টক বা দাম পরিবর্তন হলে ইউজারদের নোটিফাই করা।  
+
+2. **সাবস্ক্রিপশন সিস্টেম:**  
+   - কন্টেন্ট আপডেট হলে সাবস্ক্রাইবারদের জানানো।  
+
+3. **চ্যাট সিস্টেম:**  
+   - নতুন মেসেজ এলে রিয়েল-টাইমে সকল ইউজারকে দেখানো।  
+
+4. **লাইভ নোটিফিকেশন সিস্টেম:**  
+   - স্টক মার্কেট বা ক্রিপ্টোকারেন্সির মূল্য পরিবর্তন হলে ইউজারদের জানানো।  
+
+**Observer Pattern বাস্তব জীবনে জটিল সিস্টেমের state synchronization এবং নোটিফিকেশন ম্যানেজ করতে খুবই উপযোগী। 😊**

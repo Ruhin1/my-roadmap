@@ -1,0 +1,86 @@
+নিচে Factory Pattern ব্যবহার করে একটি বাস্তব জীবনের কোড উদাহরণ দেওয়া হলো, যা ভবিষ্যতে আপনার কাজে আসতে পারে। উদাহরণটি হলো একটি Notification Factory সিস্টেম, যেখানে বিভিন্ন ধরণের নোটিফিকেশন (ইমেইল, এসএমএস, পুশ নোটিফিকেশন) পাঠানো যায়। 
+
+### কোড উদাহরণ: Notification Factory
+
+```php
+<?php
+
+// Notification Interface
+interface Notification {
+    public function send($to, $message);
+}
+
+// Email Notification Class
+class EmailNotification implements Notification {
+    public function send($to, $message) {
+        echo "Sending Email to {$to} with message: {$message}\n";
+    }
+}
+
+// SMS Notification Class
+class SMSNotification implements Notification {
+    public function send($to, $message) {
+        echo "Sending SMS to {$to} with message: {$message}\n";
+    }
+}
+
+// Push Notification Class
+class PushNotification implements Notification {
+    public function send($to, $message) {
+        echo "Sending Push Notification to {$to} with message: {$message}\n";
+    }
+}
+
+// Notification Factory
+class NotificationFactory {
+    public static function createNotification($type) {
+        switch (strtolower($type)) {
+            case 'email':
+                return new EmailNotification();
+            case 'sms':
+                return new SMSNotification();
+            case 'push':
+                return new PushNotification();
+            default:
+                throw new Exception("Notification type '{$type}' not supported.");
+        }
+    }
+}
+
+// ব্যবহার উদাহরণ
+try {
+    // ইমেইল নোটিফিকেশন
+    $emailNotification = NotificationFactory::createNotification('email');
+    $emailNotification->send('user@example.com', 'Hello from Email!');
+
+    // এসএমএস নোটিফিকেশন
+    $smsNotification = NotificationFactory::createNotification('sms');
+    $smsNotification->send('+8801234567890', 'Hello from SMS!');
+
+    // পুশ নোটিফিকেশন
+    $pushNotification = NotificationFactory::createNotification('push');
+    $pushNotification->send('DeviceToken123', 'Hello from Push Notification!');
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
+```
+
+### কিভাবে কাজ করে:
+1. **Notification Interface:** 
+   - সব ধরণের নোটিফিকেশনের জন্য একটি স্ট্যান্ডার্ড ইন্টারফেস তৈরি করা হয়েছে।
+   - প্রতিটি ক্লাসে `send` মেথড থাকতে হবে।
+
+2. **Concrete Classes:** 
+   - `EmailNotification`, `SMSNotification`, এবং `PushNotification` ক্লাস ইন্টারফেস ইমপ্লিমেন্ট করে।
+
+3. **Factory Class:**
+   - `NotificationFactory` ক্লাস টাইপ অনুযায়ী সঠিক নোটিফিকেশন অবজেক্ট তৈরি করে।
+
+4. **ব্যবহার:**
+   - ফ্যাক্টরি ক্লাস ব্যবহার করে প্রাসঙ্গিক নোটিফিকেশন অবজেক্ট তৈরি করা হয় এবং তারপরে `send` মেথড ব্যবহার করে মেসেজ পাঠানো হয়।
+
+### বাস্তব জীবনে ব্যবহার:
+- এই ধরণের প্যাটার্নটি বিভিন্ন কমিউনিকেশন চ্যানেলের মাধ্যমে মেসেজ পাঠানোর জন্য খুবই কার্যকর।
+- উদাহরণ: ইকমার্স সাইটে অর্ডার কনফার্মেশনের ইমেইল, এসএমএস অ্যালার্ট, বা অ্যাপের মাধ্যমে পুশ নোটিফিকেশন পাঠাতে এই প্যাটার্নটি ব্যবহার করা যায়।
+
+আপনার ভবিষ্যতের কাজের জন্য এটি উপযোগী হবে বলে আশা করি! 😊

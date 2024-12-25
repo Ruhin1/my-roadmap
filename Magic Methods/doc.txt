@@ -1,0 +1,242 @@
+PHP-তে ম্যাজিক মেথডগুলো হলো বিশেষ ধরনের মেথড, যেগুলো ডাবল আন্ডারস্কোর (`__`) দিয়ে শুরু হয়। এগুলো স্বয়ংক্রিয়ভাবে কল হয় নির্দিষ্ট কিছু কনটেক্সটে। এখানে PHP-র সব ম্যাজিক মেথড এবং তাদের কাজ বিস্তারিতভাবে দেওয়া হলো:
+
+---
+
+### **1. `__construct()`**
+- **কাজ:** ক্লাসের নতুন অবজেক্ট তৈরির সময় এই মেথডটি স্বয়ংক্রিয়ভাবে কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __construct() {
+            echo "Object created!";
+        }
+    }
+    $obj = new MyClass(); // "Object created!" প্রিন্ট হবে।
+    ```
+
+---
+
+### **2. `__destruct()`**
+- **কাজ:** অবজেক্ট মেমোরি থেকে সরানোর সময় বা স্ক্রিপ্টের কাজ শেষ হলে এই মেথডটি স্বয়ংক্রিয়ভাবে কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __destruct() {
+            echo "Object destroyed!";
+        }
+    }
+    $obj = new MyClass();
+    // স্ক্রিপ্ট শেষ হলে "Object destroyed!" প্রিন্ট হবে।
+    ```
+
+---
+
+### **3. `__get($property)`**
+- **কাজ:** অবজেক্টের কোন অব্যবহৃত বা প্রাইভেট প্রপার্টি অ্যাক্সেস করতে গেলে এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data = "Secret Data";
+        public function __get($name) {
+            return "You tried to access '{$name}'";
+        }
+    }
+    $obj = new MyClass();
+    echo $obj->data; // "You tried to access 'data'"।
+    ```
+
+---
+
+### **4. `__set($property, $value)`**
+- **কাজ:** অবজেক্টের অব্যবহৃত বা প্রাইভেট প্রপার্টিতে ডাটা সেট করার সময় এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data;
+        public function __set($name, $value) {
+            echo "You tried to set '{$name}' to '{$value}'";
+        }
+    }
+    $obj = new MyClass();
+    $obj->data = "New Value"; // "You tried to set 'data' to 'New Value'"।
+    ```
+
+---
+
+### **5. `__isset($property)`**
+- **কাজ:** অবজেক্টের কোন প্রপার্টি `isset()` দিয়ে চেক করার সময় এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data = "Secret";
+        public function __isset($name) {
+            return $name === 'data';
+        }
+    }
+    $obj = new MyClass();
+    var_dump(isset($obj->data)); // true।
+    ```
+
+---
+
+### **6. `__unset($property)`**
+- **কাজ:** অবজেক্টের কোন প্রপার্টি `unset()` করার সময় এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data = "Secret";
+        public function __unset($name) {
+            echo "{$name} property is being unset!";
+        }
+    }
+    $obj = new MyClass();
+    unset($obj->data); // "data property is being unset!"।
+    ```
+
+---
+
+### **7. `__call($method, $arguments)`**
+- **কাজ:** অবজেক্টের যেসব মেথড নেই বা ইনঅ্যাক্সেসেবল, সেগুলো কল করলে এটি ব্যবহার হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __call($name, $arguments) {
+            echo "Method '{$name}' not found!";
+        }
+    }
+    $obj = new MyClass();
+    $obj->nonExistentMethod(); // "Method 'nonExistentMethod' not found!"।
+    ```
+
+---
+
+### **8. `__callStatic($method, $arguments)`**
+- **কাজ:** স্ট্যাটিক মেথড যেগুলো নেই বা ইনঅ্যাক্সেসেবল, সেগুলো কল করলে এটি ব্যবহার হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public static function __callStatic($name, $arguments) {
+            echo "Static method '{$name}' not found!";
+        }
+    }
+    MyClass::nonExistentStaticMethod(); // "Static method 'nonExistentStaticMethod' not found!"।
+    ```
+
+---
+
+### **9. `__toString()`**
+- **কাজ:** অবজেক্টকে স্ট্রিং হিসেবে ব্যবহার করলে এই মেথডটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __toString() {
+            return "This is an object!";
+        }
+    }
+    $obj = new MyClass();
+    echo $obj; // "This is an object!"।
+    ```
+
+---
+
+### **10. `__invoke()`**
+- **কাজ:** অবজেক্টকে একটি ফাংশনের মতো ব্যবহার করলে এই মেথডটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __invoke($param) {
+            return "You passed '{$param}'";
+        }
+    }
+    $obj = new MyClass();
+    echo $obj("Hello"); // "You passed 'Hello'"।
+    ```
+
+---
+
+### **11. `__clone()`**
+- **কাজ:** অবজেক্ট ক্লোন করার সময় এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __clone() {
+            echo "Object cloned!";
+        }
+    }
+    $obj1 = new MyClass();
+    $obj2 = clone $obj1; // "Object cloned!"।
+    ```
+
+---
+
+### **12. `__debugInfo()`**
+- **কাজ:** `var_dump()` দিয়ে ডাম্প করার সময় কোন ডাটা দেখাবে তা কাস্টমাইজ করতে এটি ব্যবহার হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data = "Secret";
+        public function __debugInfo() {
+            return ['data' => $this->data];
+        }
+    }
+    $obj = new MyClass();
+    var_dump($obj); // ডাটা ডাম্প করবে।
+    ```
+
+---
+
+### **13. `__sleep()`**
+- **কাজ:** অবজেক্ট সিরিয়ালাইজ করার সময় কোন প্রপার্টি সংরক্ষণ করা হবে তা নির্ধারণ করতে এটি ব্যবহার হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        private $data = "Secret";
+        public function __sleep() {
+            return ['data'];
+        }
+    }
+    ```
+
+---
+
+### **14. `__wakeup()`**
+- **কাজ:** অবজেক্ট ডেসিরিয়ালাইজ করার সময় এটি কল হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public function __wakeup() {
+            echo "Object deserialized!";
+        }
+    }
+    ```
+
+---
+
+### **15. `__set_state()`**
+- **কাজ:** `var_export()` ব্যবহার করে অবজেক্টকে পুনর্গঠন করতে এটি ব্যবহার হয়।
+- **উদাহরণ:**
+    ```php
+    class MyClass {
+        public static function __set_state($properties) {
+            $obj = new self();
+            foreach ($properties as $name => $value) {
+                $obj->$name = $value;
+            }
+            return $obj;
+        }
+    }
+    ```
+
+---
+
+### **16. `__autoload()`**
+- **কাজ:** ক্লাস লোড করতে স্বয়ংক্রিয়ভাবে কল হয় (তবে এটি এখন ডিপ্রিকেটেড)।
+
+---
+
+### **17. `__serialize()` এবং `__unserialize()`**
+- **কাজ:** অবজেক্টের ডেটা কাস্টমাইজডভাবে সিরিয়ালাইজ এবং ডেসিরিয়ালাইজ করার জন্য।
+  
+---
+
+এসব ম্যাজিক মেথডের মাধ্যমে PHP-তে কাস্টম কাজগুলো সহজে করা যায়।
