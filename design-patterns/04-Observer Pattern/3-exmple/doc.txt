@@ -1,0 +1,159 @@
+নিচে **Observer Pattern**-এর আরেকটি বাস্তব উদাহরণ দেওয়া হলো। এখানে একটি **Weather Station** সিস্টেম তৈরি করা হয়েছে যেখানে বিভিন্ন ডিভাইস (যেমন মোবাইল অ্যাপ, ডেস্কটপ অ্যাপ) আবহাওয়ার তথ্য আপডেট পায়। 
+
+---
+
+### **রিয়েল লাইফ উদাহরণ: Weather Station System**
+
+#### **ধারণা:**
+একটি Weather Station আছে যা তাপমাত্রা এবং আর্দ্রতার তথ্য সংগ্রহ করে। বিভিন্ন ডিভাইস (Observers) সেই তথ্য দেখায়। যখন Weather Station-এর ডেটা পরিবর্তিত হয়, তখন সমস্ত ডিভাইসকে নোটিফাই করা হয়।
+
+---
+
+### **কোড:**
+
+#### **Step 1: Subject (Weather Station)**
+
+```php
+<?php
+
+class WeatherStation {
+    private $observers = []; // List of observers
+    private $temperature;
+    private $humidity;
+
+    // Attach an observer
+    public function attach(Observer $observer) {
+        $this->observers[] = $observer;
+    }
+
+    // Detach an observer
+    public function detach(Observer $observer) {
+        $this->observers = array_filter($this->observers, function ($obs) use ($observer) {
+            return $obs !== $observer;
+        });
+    }
+
+    // Notify all observers
+    public function notify() {
+        foreach ($this->observers as $observer) {
+            $observer->update($this->temperature, $this->humidity);
+        }
+    }
+
+    // Set weather data and notify observers
+    public function setWeatherData($temperature, $humidity) {
+        $this->temperature = $temperature;
+        $this->humidity = $humidity;
+        $this->notify();
+    }
+}
+```
+
+---
+
+#### **Step 2: Observer Interface**
+
+```php
+<?php
+
+interface Observer {
+    public function update($temperature, $humidity);
+}
+```
+
+---
+
+#### **Step 3: Concrete Observers**
+
+##### **Mobile Device Observer:**
+
+```php
+<?php
+
+class MobileDevice implements Observer {
+    public function update($temperature, $humidity) {
+        echo "Mobile Device: Temperature is $temperature°C, Humidity is $humidity%\n";
+    }
+}
+```
+
+##### **Desktop Application Observer:**
+
+```php
+<?php
+
+class DesktopApp implements Observer {
+    public function update($temperature, $humidity) {
+        echo "Desktop App: Temperature is $temperature°C, Humidity is $humidity%\n";
+    }
+}
+```
+
+---
+
+#### **Step 4: Example Usage**
+
+```php
+<?php
+
+// Include all files
+require_once 'WeatherStation.php';
+require_once 'Observer.php';
+require_once 'MobileDevice.php';
+require_once 'DesktopApp.php';
+
+// Create the Weather Station (Subject)
+$weatherStation = new WeatherStation();
+
+// Create Observers
+$mobileDevice = new MobileDevice();
+$desktopApp = new DesktopApp();
+
+// Attach observers to the Weather Station
+$weatherStation->attach($mobileDevice);
+$weatherStation->attach($desktopApp);
+
+// Simulate weather data updates
+$weatherStation->setWeatherData(25, 60); // Update 1
+$weatherStation->setWeatherData(30, 70); // Update 2
+```
+
+---
+
+### **আউটপুট:**
+
+```
+Mobile Device: Temperature is 25°C, Humidity is 60%
+Desktop App: Temperature is 25°C, Humidity is 60%
+Mobile Device: Temperature is 30°C, Humidity is 70%
+Desktop App: Temperature is 30°C, Humidity is 70%
+```
+
+---
+
+### **কোডের ব্যাখ্যা:**
+
+1. **WeatherStation Class:**
+   - এটি মূল **Subject**। এটি তাপমাত্রা এবং আর্দ্রতার তথ্য সংগ্রহ করে এবং যখন ডেটা পরিবর্তিত হয় তখন সমস্ত Observers-কে নোটিফাই করে।
+
+2. **Observer Interface:**
+   - প্রতিটি শ্রোতাকে (Observer) একটি `update()` মেথড ইমপ্লিমেন্ট করতে বাধ্য করা হয় যাতে তারা Subject-এর ডেটা পায়।
+
+3. **Concrete Observers:**
+   - **MobileDevice** এবং **DesktopApp** হল নির্দিষ্ট Observers, যারা WeatherStation থেকে ডেটা পেয়ে তাদের কাজ করে।
+
+4. **Usage:**
+   - WeatherStation-এ Observers যোগ করা হয়। যখন নতুন ডেটা সেট করা হয়, তখন Observers-কে আপডেট করা হয়।
+
+---
+
+### **বাস্তব জীবনে ব্যবহার:**
+
+1. **Weather Monitoring Systems**: যেমন এখানে দেখানো হয়েছে।
+2. **ই-কমার্স নোটিফিকেশন সিস্টেম**: যখন প্রোডাক্টের দাম কমে তখন ক্রেতাদের নোটিফাই করা।
+3. **স্টক মার্কেট ট্র্যাকার**: স্টক প্রাইস পরিবর্তন হলে ট্রেডারদের নোটিফাই করা।
+4. **নিউজ আপডেট সিস্টেম**: ব্যবহারকারীরা একটি নির্দিষ্ট ক্যাটেগরির নিউজের জন্য সাবস্ক্রাইব করলে নতুন নিউজ প্রকাশ হলে তাদের নোটিফাই করা।
+
+---
+
+এই উদাহরণটি **Observer Pattern**-এর একটি প্র্যাক্টিক্যাল প্রয়োগ এবং এটি ইভেন্ট-ভিত্তিক সিস্টেম তৈরি করার জন্য খুবই কার্যকরী। 😊

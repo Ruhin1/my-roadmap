@@ -1,0 +1,223 @@
+### **Real-Life Form Validation Using Decorator Pattern**
+
+ডেকোরেটর প্যাটার্ন ব্যবহার করে একটি ফর্মের ইনপুট ভ্যালিডেশন সিস্টেম তৈরি করা যেতে পারে। প্রতিটি ইনপুট ফিল্ডে ভিন্ন ভিন্ন ভ্যালিডেশন যুক্ত করা যাবে এবং এই ভ্যালিডেশনগুলোকে চেইন আকারে প্রয়োগ করা যাবে।
+
+---
+
+### **কোড ইমপ্লিমেন্টেশন:**
+
+#### **Step 1: Validation Interface (Component Interface)**
+
+```php
+<?php
+
+interface Validator {
+    public function validate($input): bool; // ভ্যালিডেশন পাস করলে true, না হলে false
+    public function getErrorMessage(): string; // ত্রুটির মেসেজ
+}
+```
+
+---
+
+#### **Step 2: Base Validator (Concrete Component)**
+
+```php
+<?php
+
+class BaseValidator implements Validator {
+    public function validate($input): bool {
+        return true; // কোনো বেসিক ভ্যালিডেশন নেই
+    }
+
+    public function getErrorMessage(): string {
+        return ""; // ত্রুটির মেসেজ নেই
+    }
+}
+```
+
+---
+
+#### **Step 3: Validation Decorator (Base Decorator)**
+
+```php
+<?php
+
+class ValidationDecorator implements Validator {
+    protected $validator;
+
+    public function __construct(Validator $validator) {
+        $this->validator = $validator;
+    }
+
+    public function validate($input): bool {
+        return $this->validator->validate($input);
+    }
+
+    public function getErrorMessage(): string {
+        return $this->validator->getErrorMessage();
+    }
+}
+```
+
+---
+
+#### **Step 4: Specific Validators (Concrete Decorators)**
+
+##### **Required Field Validator:**
+```php
+<?php
+
+class RequiredValidator extends ValidationDecorator {
+    private $errorMessage = "This field is required.";
+
+    public function validate($input): bool {
+        if (trim($input) === "") {
+            return false;
+        }
+        return $this->validator->validate($input);
+    }
+
+    public function getErrorMessage(): string {
+        return !$this->validate("") ? $this->errorMessage : $this->validator->getErrorMessage();
+    }
+}
+```
+
+##### **Email Format Validator:**
+```php
+<?php
+
+class EmailValidator extends ValidationDecorator {
+    private $errorMessage = "Invalid email format.";
+
+    public function validate($input): bool {
+        if (!filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+        return $this->validator->validate($input);
+    }
+
+    public function getErrorMessage(): string {
+        return !$this->validate("invalid@") ? $this->errorMessage : $this->validator->getErrorMessage();
+    }
+}
+```
+
+##### **Minimum Length Validator:**
+```php
+<?php
+
+class MinLengthValidator extends ValidationDecorator {
+    private $minLength;
+    private $errorMessage;
+
+    public function __construct(Validator $validator, $minLength) {
+        parent::__construct($validator);
+        $this->minLength = $minLength;
+        $this->errorMessage = "Minimum length must be {$this->minLength} characters.";
+    }
+
+    public function validate($input): bool {
+        if (strlen($input) < $this->minLength) {
+            return false;
+        }
+        return $this->validator->validate($input);
+    }
+
+    public function getErrorMessage(): string {
+        return !$this->validate("") ? $this->errorMessage : $this->validator->getErrorMessage();
+    }
+}
+```
+
+---
+
+#### **Step 5: Usage**
+
+```php
+<?php
+
+require_once 'Validator.php';
+require_once 'BaseValidator.php';
+require_once 'ValidationDecorator.php';
+require_once 'RequiredValidator.php';
+require_once 'EmailValidator.php';
+require_once 'MinLengthValidator.php';
+
+// User input data
+$userInput = [
+    'name' => '',
+    'email' => 'invalid_email',
+    'password' => '123'
+];
+
+// Validators for 'name' field
+$nameValidator = new RequiredValidator(new BaseValidator());
+
+// Validators for 'email' field
+$emailValidator = new EmailValidator(new RequiredValidator(new BaseValidator()));
+
+// Validators for 'password' field
+$passwordValidator = new MinLengthValidator(new RequiredValidator(new BaseValidator()), 6);
+
+// Validate and display results
+echo "Name Validation: \n";
+if (!$nameValidator->validate($userInput['name'])) {
+    echo $nameValidator->getErrorMessage() . "\n";
+}
+
+echo "\nEmail Validation: \n";
+if (!$emailValidator->validate($userInput['email'])) {
+    echo $emailValidator->getErrorMessage() . "\n";
+}
+
+echo "\nPassword Validation: \n";
+if (!$passwordValidator->validate($userInput['password'])) {
+    echo $passwordValidator->getErrorMessage() . "\n";
+}
+```
+
+---
+
+### **Sample Output:**
+```
+Name Validation: 
+This field is required.
+
+Email Validation: 
+Invalid email format.
+
+Password Validation: 
+Minimum length must be 6 characters.
+```
+
+---
+
+### **কোডের ব্যাখ্যা:**
+
+1. **BaseValidator:**  
+   - বেসিক ভ্যালিডেশন যা ডেকোরেটর প্যাটার্নের ভিত্তি তৈরি করে।
+
+2. **ValidationDecorator:**  
+   - এটি অন্যান্য ভ্যালিডেটরদের জন্য বেস ডেকোরেটর হিসেবে কাজ করে।
+
+3. **Specific Validators:**  
+   - প্রতিটি নির্দিষ্ট ভ্যালিডেশন (যেমন, `RequiredValidator`, `EmailValidator`) আলাদা আলাদা ডেকোরেটর হিসেবে কাজ করে। 
+
+4. **Usage:**  
+   - একটি ইনপুটের ওপর একাধিক ভ্যালিডেশন ধাপে ধাপে প্রয়োগ করা হয়, যেমন `RequiredValidator` -> `EmailValidator`।
+
+---
+
+### **বাস্তব জীবনে ব্যবহার:**
+
+1. **ই-কমার্স সাইট:**  
+   - ইউজার রেজিস্ট্রেশন ফর্ম ভ্যালিডেশন।
+
+2. **অ্যাপ্লিকেশন ফর্ম:**  
+   - সরকারি ফর্ম যেখানে বিভিন্ন ক্ষেত্রের তথ্য সঠিক হওয়া আবশ্যক।
+
+3. **ডেটা প্রসেসিং:**  
+   - ইনপুট ডেটা ক্লিন ও ভ্যালিড হওয়ার জন্য ভ্যালিডেশন।
+
+এই প্যাটার্ন ভ্যালিডেশন প্রসেসকে সহজ এবং মডুলার করে, যা পরবর্তীতে সহজে আপগ্রেড করা যায়। 😊

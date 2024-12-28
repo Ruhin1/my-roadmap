@@ -1,0 +1,135 @@
+**Decorator Pattern** ব্যবহার করে ফাইল লজিক মডিফিকেশন করতে চাইলে, আমরা মূল ফাইলের লজিকের ওপর বিভিন্ন ফিচার যোগ করতে পারি, যেমন: ফাইল এনক্রিপশন, ডিকম্প্রেশন, লগিং ইত্যাদি। এখানে একটি বাস্তব উদাহরণ দেওয়া হলো যেখানে ফাইল লেখার লজিকের ওপর ডেকোরেটর ব্যবহার করে এনক্রিপশন এবং লগিং যুক্ত করা হয়েছে:
+
+---
+
+### **Code Example: File Logic Modification Using Decorator Pattern**
+
+```php
+<?php
+
+// Step 1: Create a FileWriter Interface
+interface FileWriter {
+    public function write($data);
+}
+
+// Step 2: Create a Concrete FileWriter
+class BasicFileWriter implements FileWriter {
+    private $filePath;
+
+    public function __construct($filePath) {
+        $this->filePath = $filePath;
+    }
+
+    public function write($data) {
+        file_put_contents($this->filePath, $data, FILE_APPEND);
+        echo "Data written to file: {$this->filePath}\n";
+    }
+}
+
+// Step 3: Create an Abstract Decorator
+abstract class FileWriterDecorator implements FileWriter {
+    protected $fileWriter;
+
+    public function __construct(FileWriter $fileWriter) {
+        $this->fileWriter = $fileWriter;
+    }
+
+    public function write($data) {
+        $this->fileWriter->write($data);
+    }
+}
+
+// Step 4: Create Concrete Decorators
+// Encrypt data before writing
+class EncryptedFileWriter extends FileWriterDecorator {
+    public function write($data) {
+        $encryptedData = base64_encode($data); // Simple encryption using Base64
+        echo "Data encrypted.\n";
+        parent::write($encryptedData);
+    }
+}
+
+// Log data before writing
+class LoggingFileWriter extends FileWriterDecorator {
+    public function write($data) {
+        $logMessage = "[LOG] Writing data: " . substr($data, 0, 20) . "..."; // Log first 20 characters
+        file_put_contents('app.log', $logMessage . PHP_EOL, FILE_APPEND);
+        echo "Log entry created.\n";
+        parent::write($data);
+    }
+}
+
+// Step 5: Use the Decorators
+$filePath = 'data.txt';
+
+// Step 5.1: Basic File Writing
+$fileWriter = new BasicFileWriter($filePath);
+$fileWriter->write("Basic data.\n");
+
+// Step 5.2: File Writing with Encryption
+$encryptedWriter = new EncryptedFileWriter($fileWriter);
+$encryptedWriter->write("Sensitive data.\n");
+
+// Step 5.3: File Writing with Encryption and Logging
+$loggingEncryptedWriter = new LoggingFileWriter($encryptedWriter);
+$loggingEncryptedWriter->write("Highly confidential data.\n");
+
+?>
+```
+
+---
+
+### **Code Explanation**
+
+1. **FileWriter Interface:** 
+   - `FileWriter` একটি ইন্টারফেস যা `write` মেথড ডিফাইন করে। 
+
+2. **BasicFileWriter Class:** 
+   - এই ক্লাসটি সরাসরি ফাইলে ডেটা লেখার কাজ করে।
+
+3. **FileWriterDecorator Abstract Class:** 
+   - এটি একটি অ্যাবস্ট্রাক্ট ক্লাস যা `FileWriter` ইন্টারফেস ইমপ্লিমেন্ট করে। এটি মূল লেখার লজিকের ওপর অতিরিক্ত ফিচার যোগ করার সুযোগ দেয়।
+
+4. **EncryptedFileWriter Decorator:** 
+   - এখানে ডেটাকে এনক্রিপ্ট (Base64) করে তারপর ফাইলে লেখা হয়।
+
+5. **LoggingFileWriter Decorator:** 
+   - ফাইলে লেখার আগে ডেটা লগ ফাইল (`app.log`) এ সংরক্ষণ করা হয়।
+
+6. **Usage:**
+   - **Basic File Writing:** `BasicFileWriter` দিয়ে ফাইলে সরাসরি ডেটা লেখা।
+   - **File Writing with Encryption:** `EncryptedFileWriter` দিয়ে ডেটাকে এনক্রিপ্ট করে ফাইলে লেখা।
+   - **File Writing with Encryption and Logging:** `LoggingFileWriter` দিয়ে লগ তৈরি করা এবং এনক্রিপ্ট করে ফাইলে লেখা।
+
+---
+
+### **Output Example**
+
+```
+Data written to file: data.txt
+Data encrypted.
+Data written to file: data.txt
+Log entry created.
+Data encrypted.
+Data written to file: data.txt
+```
+
+---
+
+### **Generated Files**
+
+1. **data.txt**: 
+   Contains the written data (including encrypted content).
+   
+2. **app.log**: 
+   Contains log entries for all written data.
+
+---
+
+### **Real-Life Use Case**
+এই প্যাটার্নটি ব্যবহার করা যেতে পারে যদি:
+- ফাইলের ডেটা সংরক্ষণ করার আগে এনক্রিপ্ট করতে চান।
+- লগ তৈরি করতে চান ফাইল অপারেশনের জন্য।
+- ডেটা কম্প্রেস করতে চান।
+
+আপনার প্রয়োজনে এই প্যাটার্ন আরও কাস্টমাইজ করে ব্যবহার করতে পারেন! 😊
