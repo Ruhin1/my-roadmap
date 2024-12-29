@@ -1,0 +1,180 @@
+### Dynamic Form Generation Using Builder Pattern
+
+ধরুন, আপনি এমন একটি সিস্টেম তৈরি করতে চান যেখানে ডায়নামিক ফর্ম তৈরি করা যায়। এই ফর্মের ফিল্ডগুলো ভিন্ন হতে পারে, যেমন- **টেক্সট ইনপুট, চেকবক্স, রেডিও বাটন, ড্রপডাউন ইত্যাদি।**  
+
+এই কাজটি **Builder Pattern** ব্যবহার করে সহজেই করা সম্ভব। নিচে এর একটি বাস্তব উদাহরণ দেওয়া হলো:
+
+---
+
+### কোড উদাহরণ: ডায়নামিক ফর্ম জেনারেশন
+
+```php
+<?php
+
+// Product Class
+class Form {
+    private $fields = [];
+    private $formAttributes = "";
+
+    public function addField($field) {
+        $this->fields[] = $field;
+    }
+
+    public function setAttributes($attributes) {
+        $this->formAttributes = $attributes;
+    }
+
+    public function render() {
+        echo "<form {$this->formAttributes}>";
+        foreach ($this->fields as $field) {
+            echo $field . "<br>";
+        }
+        echo "<button type='submit'>Submit</button>";
+        echo "</form>";
+    }
+}
+
+// Builder Interface
+interface FormBuilder {
+    public function setFormAttributes($attributes);
+    public function addTextInput($name, $placeholder);
+    public function addCheckbox($name, $label);
+    public function addRadioButton($name, $value, $label);
+    public function addDropdown($name, $options);
+    public function getForm();
+}
+
+// Concrete Builder
+class DynamicFormBuilder implements FormBuilder {
+    private $form;
+
+    public function __construct() {
+        $this->form = new Form();
+    }
+
+    public function setFormAttributes($attributes) {
+        $this->form->setAttributes($attributes);
+    }
+
+    public function addTextInput($name, $placeholder) {
+        $this->form->addField("<input type='text' name='{$name}' placeholder='{$placeholder}'>");
+    }
+
+    public function addCheckbox($name, $label) {
+        $this->form->addField("<label><input type='checkbox' name='{$name}'> {$label}</label>");
+    }
+
+    public function addRadioButton($name, $value, $label) {
+        $this->form->addField("<label><input type='radio' name='{$name}' value='{$value}'> {$label}</label>");
+    }
+
+    public function addDropdown($name, $options) {
+        $dropdown = "<select name='{$name}'>";
+        foreach ($options as $value => $label) {
+            $dropdown .= "<option value='{$value}'>{$label}</option>";
+        }
+        $dropdown .= "</select>";
+        $this->form->addField($dropdown);
+    }
+
+    public function getForm() {
+        return $this->form;
+    }
+}
+
+// Director Class
+class FormDirector {
+    public function buildContactForm(FormBuilder $builder) {
+        $builder->setFormAttributes("action='submit.php' method='POST'");
+        $builder->addTextInput("name", "Enter your name");
+        $builder->addTextInput("email", "Enter your email");
+        $builder->addCheckbox("subscribe", "Subscribe to newsletter");
+        $builder->addDropdown("gender", [
+            "male" => "Male",
+            "female" => "Female",
+            "other" => "Other"
+        ]);
+        return $builder->getForm();
+    }
+
+    public function buildSurveyForm(FormBuilder $builder) {
+        $builder->setFormAttributes("action='survey.php' method='POST'");
+        $builder->addTextInput("name", "Enter your name");
+        $builder->addRadioButton("satisfaction", "good", "Good");
+        $builder->addRadioButton("satisfaction", "average", "Average");
+        $builder->addRadioButton("satisfaction", "poor", "Poor");
+        return $builder->getForm();
+    }
+}
+
+// Usage Example
+$director = new FormDirector();
+
+echo "<h3>Contact Form:</h3>";
+$contactFormBuilder = new DynamicFormBuilder();
+$contactForm = $director->buildContactForm($contactFormBuilder);
+$contactForm->render();
+
+echo "<h3>Survey Form:</h3>";
+$surveyFormBuilder = new DynamicFormBuilder();
+$surveyForm = $director->buildSurveyForm($surveyFormBuilder);
+$surveyForm->render();
+
+?>
+```
+
+---
+
+### কোডের কার্যপ্রণালী
+
+1. **Product Class (Form):**  
+   - এই ক্লাসে ফর্মের সব ফিল্ড এবং অ্যাট্রিবিউট যুক্ত হয়।  
+   - `render()` মেথড দিয়ে HTML ফর্ম জেনারেট করা হয়।  
+
+2. **Builder Interface (FormBuilder):**  
+   - ফর্মের বিভিন্ন ধাপ (টেক্সট ইনপুট, চেকবক্স, রেডিও বাটন) সংজ্ঞায়িত করে।  
+
+3. **Concrete Builder (DynamicFormBuilder):**  
+   - ফর্ম তৈরির বাস্তবায়ন দেয়।  
+   - প্রতিটি ফিল্ড যুক্ত করার জন্য নির্দিষ্ট মেথড আছে।  
+
+4. **Director Class (FormDirector):**  
+   - ফর্ম তৈরির লজিক পরিচালনা করে।  
+   - ভিন্ন ধরণের ফর্ম তৈরির জন্য মেথড ব্যবহার করা হয় (যেমন: Contact Form এবং Survey Form)।  
+
+---
+
+### আউটপুট
+
+```html
+<h3>Contact Form:</h3>
+<form action='submit.php' method='POST'>
+    <input type='text' name='name' placeholder='Enter your name'><br>
+    <input type='text' name='email' placeholder='Enter your email'><br>
+    <label><input type='checkbox' name='subscribe'> Subscribe to newsletter</label><br>
+    <select name='gender'>
+        <option value='male'>Male</option>
+        <option value='female'>Female</option>
+        <option value='other'>Other</option>
+    </select><br>
+    <button type='submit'>Submit</button>
+</form>
+
+<h3>Survey Form:</h3>
+<form action='survey.php' method='POST'>
+    <input type='text' name='name' placeholder='Enter your name'><br>
+    <label><input type='radio' name='satisfaction' value='good'> Good</label><br>
+    <label><input type='radio' name='satisfaction' value='average'> Average</label><br>
+    <label><input type='radio' name='satisfaction' value='poor'> Poor</label><br>
+    <button type='submit'>Submit</button>
+</form>
+```
+
+---
+
+### ব্যবহার কোথায়?  
+1. **ডাইনামিক ফর্ম তৈরির সিস্টেম।**  
+2. **ই-কমার্স সাইটে চেকআউট ফর্ম।**  
+3. **ড্যাশবোর্ডে রিপোর্ট বা সার্ভে ফর্ম তৈরি।**  
+
+Builder Pattern ব্যবহার করে, ফর্ম তৈরির কাজ সহজ এবং পুনর্ব্যবহারযোগ্য করা যায়। 🎉

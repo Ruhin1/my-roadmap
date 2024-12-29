@@ -1,0 +1,103 @@
+নিশ্চয়ই! চলুন, আরও সহজ একটি উদাহরণ দেখি যেখানে **Adapter Pattern** ব্যবহার করা হয়েছে।
+
+---
+
+### **Problem Scenario: Unit Conversion**
+
+আপনার একটি অ্যাপ্লিকেশন আছে যা কিলোমিটার (km) থেকে মাইল (miles) রূপান্তর করে। কিন্তু, আপনি একটি তৃতীয় পক্ষের API ব্যবহার করতে চান, যা কিলোমিটারের পরিবর্তে মিটার (meters) ইনপুট গ্রহণ করে এবং মাইল আউটপুট দেয়। এই দুই ইন্টারফেসের মধ্যে সামঞ্জস্য আনতে **Adapter Pattern** ব্যবহার করব।
+
+---
+
+### **Step 1: Target Interface**
+```php
+<?php
+// Client expects this interface
+interface DistanceConverter {
+    public function convertToMiles($kilometers);
+}
+```
+
+---
+
+### **Step 2: Adaptee (Third-party API)**  
+```php
+<?php
+// Third-party API works with meters
+class ThirdPartyDistanceAPI {
+    public function getMiles($meters) {
+        return $meters * 0.000621371;
+    }
+}
+```
+
+---
+
+### **Step 3: Adapter Class**
+```php
+<?php
+// Adapter to convert kilometers to meters and use the third-party API
+class DistanceAdapter implements DistanceConverter {
+    private $thirdPartyAPI;
+
+    public function __construct(ThirdPartyDistanceAPI $api) {
+        $this->thirdPartyAPI = $api;
+    }
+
+    public function convertToMiles($kilometers) {
+        // Convert kilometers to meters
+        $meters = $kilometers * 1000;
+
+        // Use the third-party API to get miles
+        return $this->thirdPartyAPI->getMiles($meters);
+    }
+}
+```
+
+---
+
+### **Step 4: Client Code**
+```php
+<?php
+// Client code
+function calculateDistance(DistanceConverter $converter, $kilometers) {
+    $miles = $converter->convertToMiles($kilometers);
+    echo "$kilometers kilometers is equal to $miles miles.\n";
+}
+
+// Using the adapter
+$thirdPartyAPI = new ThirdPartyDistanceAPI();
+$adapter = new DistanceAdapter($thirdPartyAPI);
+
+calculateDistance($adapter, 5);  // 5 kilometers
+calculateDistance($adapter, 10); // 10 kilometers
+```
+
+---
+
+### **Output**
+```
+5 kilometers is equal to 3.106855 miles.
+10 kilometers is equal to 6.21371 miles.
+```
+
+---
+
+### **Explanation**
+
+1. **Client Code:**  
+   ক্লায়েন্ট কিলোমিটার ইনপুট দেয় এবং মাইল আউটপুট প্রত্যাশা করে।  
+
+2. **Adaptee:**  
+   `ThirdPartyDistanceAPI` সরাসরি মিটার ইনপুট গ্রহণ করে এবং মাইল আউটপুট দেয়।  
+
+3. **Adapter:**  
+   - কিলোমিটারকে মিটারে রূপান্তর করে।  
+   - তারপর তৃতীয় পক্ষের API ব্যবহার করে মাইল রূপান্তরিত করে।  
+   - ক্লায়েন্টের প্রত্যাশিত আউটপুট সরবরাহ করে।  
+
+4. **Why Adapter Pattern?**  
+   ক্লায়েন্ট এবং তৃতীয় পক্ষের API-এর ইন্টারফেস ভিন্ন হওয়ায় তাদের মধ্যে সেতু হিসেবে কাজ করে **Adapter**।
+
+---
+
+এই উদাহরণ বাস্তব জীবনে খুব সাধারণ, বিশেষ করে যখন ভিন্ন ধরনের API বা লাইব্রেরি ইন্টিগ্রেট করতে হয়।

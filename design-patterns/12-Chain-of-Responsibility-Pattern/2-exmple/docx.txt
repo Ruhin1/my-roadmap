@@ -1,0 +1,146 @@
+### **Simple Example of Chain of Responsibility Pattern**:  
+ধরি, আপনি একটি রেস্টুরেন্টে অর্ডার করছেন। রেস্টুরেন্টে ৩ ধরণের কর্মী আছেন:  
+1. **Waiter**: সাধারণ অর্ডার নিতে পারে।  
+2. **Chef**: খাবার রান্না করে।  
+3. **Manager**: সমস্যার সমাধান বা বিশেষ অনুরোধ হ্যান্ডেল করে।  
+
+এখানে আমরা চেইনের মাধ্যমে অর্ডার প্রক্রিয়া করব।  
+
+---
+
+### **Code Implementation**
+
+#### **Step 1: Handler Interface**
+```php
+<?php
+interface Handler {
+    public function setNext(Handler $nextHandler);
+    public function handle($request);
+}
+```
+
+---
+
+#### **Step 2: Abstract Handler**
+```php
+<?php
+abstract class AbstractHandler implements Handler {
+    protected $nextHandler;
+
+    public function setNext(Handler $nextHandler) {
+        $this->nextHandler = $nextHandler;
+    }
+
+    public function handle($request) {
+        if ($this->nextHandler) {
+            $this->nextHandler->handle($request);
+        }
+    }
+}
+```
+
+---
+
+#### **Step 3: Concrete Handlers**
+```php
+<?php
+class Waiter extends AbstractHandler {
+    public function handle($request) {
+        if ($request === "take order") {
+            echo "Waiter: I have taken your order.\n";
+        } else {
+            echo "Waiter: Passing to the Chef.\n";
+            parent::handle($request);
+        }
+    }
+}
+
+class Chef extends AbstractHandler {
+    public function handle($request) {
+        if ($request === "cook food") {
+            echo "Chef: I have cooked the food.\n";
+        } else {
+            echo "Chef: Passing to the Manager.\n";
+            parent::handle($request);
+        }
+    }
+}
+
+class Manager extends AbstractHandler {
+    public function handle($request) {
+        if ($request === "resolve issue") {
+            echo "Manager: I have resolved your issue.\n";
+        } else {
+            echo "Manager: Sorry, I can't handle this request.\n";
+        }
+    }
+}
+```
+
+---
+
+#### **Step 4: Client Code**
+```php
+<?php
+// Create handlers
+$waiter = new Waiter();
+$chef = new Chef();
+$manager = new Manager();
+
+// Create the chain
+$waiter->setNext($chef);
+$chef->setNext($manager);
+
+// Handle requests
+echo "Request: Take Order\n";
+$waiter->handle("take order");
+
+echo "\nRequest: Cook Food\n";
+$waiter->handle("cook food");
+
+echo "\nRequest: Resolve Issue\n";
+$waiter->handle("resolve issue");
+
+echo "\nRequest: Unknown Task\n";
+$waiter->handle("unknown");
+```
+
+---
+
+### **Output**
+```
+Request: Take Order
+Waiter: I have taken your order.
+
+Request: Cook Food
+Waiter: Passing to the Chef.
+Chef: I have cooked the food.
+
+Request: Resolve Issue
+Waiter: Passing to the Chef.
+Chef: Passing to the Manager.
+Manager: I have resolved your issue.
+
+Request: Unknown Task
+Waiter: Passing to the Chef.
+Chef: Passing to the Manager.
+Manager: Sorry, I can't handle this request.
+```
+
+---
+
+### **Explanation**
+1. **Waiter:** শুধু "take order" হ্যান্ডেল করতে পারে। বাকিগুলো পরবর্তী চেইনে পাঠায়।  
+2. **Chef:** "cook food" হ্যান্ডেল করে। অন্য রিকোয়েস্টগুলো ম্যানেজারকে পাঠায়।  
+3. **Manager:** "resolve issue" হ্যান্ডেল করে। অজানা কাজের জন্য "can't handle" মেসেজ দেয়।  
+
+---
+
+### **Advantages**
+1. **Simple Task Management:** প্রতিটি কাজের জন্য নির্দিষ্ট লেভেল নির্ধারণ।  
+2. **Dynamic Chain:** নতুন হ্যান্ডলার সহজেই যোগ করা যায়।  
+3. **Loosely Coupled:** রিকোয়েস্ট পাঠানোর জন্য হ্যান্ডলার ক্লাসের নাম জানা দরকার নেই।  
+
+---
+
+এই সহজ উদাহরণ রেস্টুরেন্ট সিস্টেমের মতো যেকোনো অনুরোধ-প্রক্রিয়াকরণ ব্যবস্থায় ব্যবহার করা যায়।

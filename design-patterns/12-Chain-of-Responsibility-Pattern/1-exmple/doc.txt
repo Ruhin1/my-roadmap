@@ -1,0 +1,153 @@
+### **Chain of Responsibility Pattern**: বিস্তারিত ব্যাখ্যা
+
+**Chain of Responsibility Pattern** হল একটি Behavioral Design Pattern, যেখানে একাধিক অবজেক্ট একটি নির্দিষ্ট রিকোয়েস্ট প্রক্রিয়া করার জন্য একটি চেইন গঠন করে। এই প্যাটার্নে, প্রতিটি অবজেক্ট চেইনের অংশ এবং রিকোয়েস্টটি চেইনে সামনের অবজেক্টে পাঠানো হয় যতক্ষণ না এটি প্রক্রিয়া হয়।
+
+---
+
+### **এই প্যাটার্ন কেন দরকার?**
+1. **Flexibility:** রিকোয়েস্ট প্রক্রিয়াকরণ দায়িত্ব একাধিক অবজেক্টের মধ্যে ভাগ করে।
+2. **Loosely Coupled:** রিকোয়েস্ট সেন্ডার এবং রিসিভারের মধ্যে সম্পর্ক কম।
+3. **ডাইনামিক চেইন:** চেইনের অবজেক্টগুলো ডাইনামিকভাবে যোগ বা সরানো যায়।
+
+---
+
+### **রিয়েল লাইফ উদাহরণ:** Customer Support System
+
+একটি Customer Support সিস্টেমে, গ্রাহকের সমস্যার সমাধান করার জন্য বিভিন্ন লেভেল থাকে, যেমন:
+- **Level 1 Support:** Basic সমস্যাগুলোর সমাধান।
+- **Level 2 Support:** একটু জটিল সমস্যাগুলোর সমাধান।
+- **Manager:** খুব জটিল বা গুরুত্বপূর্ণ সমস্যাগুলো সমাধান করে।
+
+---
+
+### **Step-by-Step Code Example**
+
+#### **Step 1:** Base Handler Interface
+```php
+<?php
+interface SupportHandler {
+    public function setNext(SupportHandler $nextHandler);
+    public function handle($request);
+}
+```
+
+#### **Step 2:** Abstract Handler Class
+```php
+<?php
+abstract class AbstractSupportHandler implements SupportHandler {
+    protected $nextHandler;
+
+    public function setNext(SupportHandler $nextHandler) {
+        $this->nextHandler = $nextHandler;
+    }
+
+    public function handle($request) {
+        if ($this->nextHandler) {
+            $this->nextHandler->handle($request);
+        }
+    }
+}
+```
+
+#### **Step 3:** Concrete Handlers
+```php
+<?php
+class Level1Support extends AbstractSupportHandler {
+    public function handle($request) {
+        if ($request === "basic") {
+            echo "Level 1 Support: Solved the basic issue.\n";
+        } else {
+            echo "Level 1 Support: Passing to next level.\n";
+            parent::handle($request);
+        }
+    }
+}
+
+class Level2Support extends AbstractSupportHandler {
+    public function handle($request) {
+        if ($request === "intermediate") {
+            echo "Level 2 Support: Solved the intermediate issue.\n";
+        } else {
+            echo "Level 2 Support: Passing to next level.\n";
+            parent::handle($request);
+        }
+    }
+}
+
+class ManagerSupport extends AbstractSupportHandler {
+    public function handle($request) {
+        if ($request === "complex") {
+            echo "Manager: Solved the complex issue.\n";
+        } else {
+            echo "Manager: Issue could not be resolved.\n";
+        }
+    }
+}
+```
+
+#### **Step 4:** Client Code
+```php
+<?php
+// Create handlers
+$level1 = new Level1Support();
+$level2 = new Level2Support();
+$manager = new ManagerSupport();
+
+// Create the chain
+$level1->setNext($level2);
+$level2->setNext($manager);
+
+// Handle requests
+echo "Request: Basic Issue\n";
+$level1->handle("basic");
+
+echo "\nRequest: Intermediate Issue\n";
+$level1->handle("intermediate");
+
+echo "\nRequest: Complex Issue\n";
+$level1->handle("complex");
+
+echo "\nRequest: Unknown Issue\n";
+$level1->handle("unknown");
+```
+
+---
+
+### **Output**
+```
+Request: Basic Issue
+Level 1 Support: Solved the basic issue.
+
+Request: Intermediate Issue
+Level 1 Support: Passing to next level.
+Level 2 Support: Solved the intermediate issue.
+
+Request: Complex Issue
+Level 1 Support: Passing to next level.
+Level 2 Support: Passing to next level.
+Manager: Solved the complex issue.
+
+Request: Unknown Issue
+Level 1 Support: Passing to next level.
+Level 2 Support: Passing to next level.
+Manager: Issue could not be resolved.
+```
+
+---
+
+### **ব্যাখ্যা**
+1. **Level 1 Support:** সহজ সমস্যাগুলো সমাধান করে। যদি সমাধান করতে না পারে, চেইনের পরবর্তী হ্যান্ডলারে পাঠায়।
+2. **Level 2 Support:** মধ্যম সমস্যাগুলো সমাধান করে। যদি না পারে, পরবর্তী হ্যান্ডলারে পাঠায়।
+3. **Manager:** সবচেয়ে জটিল সমস্যাগুলো সমাধান করে।
+
+---
+
+### **এই প্যাটার্ন কেন দরকার?**
+1. **পরিবর্তনযোগ্য চেইন:** নতুন লেভেল যোগ বা সরানো সহজ।
+2. **সর্বোত্তম সমাধান:** নির্দিষ্ট লেভেল প্রয়োজন অনুযায়ী সমস্যার সমাধান করে।
+3. **কোডের ক্লিনলিনেস:** একাধিক সমস্যার জন্য একাধিক সমাধান ব্যবস্থাপনা সহজ করে।
+
+---
+
+### **উপসংহার**
+Chain of Responsibility Pattern বাস্তব জীবনের প্রবলেম-সোলভিং সিস্টেমগুলোতে অত্যন্ত কার্যকরী। এটি কোডকে আরও পড়ার উপযোগী এবং মডুলার করে তোলে।

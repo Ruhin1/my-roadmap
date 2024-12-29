@@ -1,0 +1,132 @@
+### **Adapter Pattern Explained**
+
+**Definition:**  
+The Adapter Pattern is a structural design pattern that allows objects with incompatible interfaces to work together. It acts as a bridge between two interfaces, converting one interface into another expected by the client.
+
+Think of it as a **translator** that enables communication between two parties who speak different languages.
+
+---
+
+### **Where It's Used in Real Life**  
+ধরা যাক, আপনি একটি নতুন ডিভাইস কিনেছেন যার **USB-C** চার্জার পোর্ট আছে, কিন্তু আপনার কাছে শুধু **Micro-USB** চার্জার আছে। এই অবস্থায়, আপনি একটি **Adapter** ব্যবহার করবেন যা Micro-USB থেকে USB-C-তে রূপান্তর করে। 
+
+---
+
+### **Key Concepts**  
+
+- **Client:** যে পক্ষ একটি নির্দিষ্ট ফরম্যাট বা ইন্টারফেস চায়।  
+- **Adaptee:** যার ইন্টারফেস ক্লায়েন্টের জন্য সরাসরি উপযোগী নয়।  
+- **Adapter:** মধ্যস্থতাকারী, যা Adaptee-এর ইন্টারফেসকে ক্লায়েন্টের প্রয়োজনীয় ইন্টারফেসে রূপান্তর করে।  
+
+---
+
+### **Real-Life Code Example: Payment System**
+
+ধরি, আপনি একটি ই-কমার্স ওয়েবসাইট তৈরি করছেন যেখানে **PayPal** এবং **Stripe** এর মতো ভিন্ন পেমেন্ট গেটওয়ে ইন্টিগ্রেট করতে হবে। কিন্তু দুটি গেটওয়ের ইন্টারফেস ভিন্ন। আমরা Adapter Pattern ব্যবহার করে এই সমস্যার সমাধান করব।
+
+---
+
+#### **Step 1: Target Interface**  
+```php
+<?php
+interface PaymentGateway {
+    public function pay($amount);
+}
+```
+
+---
+
+#### **Step 2: Adaptees (Different Payment Systems)**  
+```php
+<?php
+// PayPal payment system
+class PayPal {
+    public function sendPayment($amount) {
+        echo "Paid $$amount using PayPal.\n";
+    }
+}
+
+// Stripe payment system
+class Stripe {
+    public function makePayment($amount) {
+        echo "Paid $$amount using Stripe.\n";
+    }
+}
+```
+
+---
+
+#### **Step 3: Adapters**  
+```php
+<?php
+// Adapter for PayPal
+class PayPalAdapter implements PaymentGateway {
+    private $paypal;
+
+    public function __construct(PayPal $paypal) {
+        $this->paypal = $paypal;
+    }
+
+    public function pay($amount) {
+        $this->paypal->sendPayment($amount);
+    }
+}
+
+// Adapter for Stripe
+class StripeAdapter implements PaymentGateway {
+    private $stripe;
+
+    public function __construct(Stripe $stripe) {
+        $this->stripe = $stripe;
+    }
+
+    public function pay($amount) {
+        $this->stripe->makePayment($amount);
+    }
+}
+```
+
+---
+
+#### **Step 4: Client Code**  
+```php
+<?php
+// Client expects a unified interface
+function processPayment(PaymentGateway $gateway, $amount) {
+    $gateway->pay($amount);
+}
+
+// Using PayPal
+$paypal = new PayPal();
+$paypalAdapter = new PayPalAdapter($paypal);
+processPayment($paypalAdapter, 100);
+
+// Using Stripe
+$stripe = new Stripe();
+$stripeAdapter = new StripeAdapter($stripe);
+processPayment($stripeAdapter, 200);
+```
+
+---
+
+### **Output**
+```
+Paid $100 using PayPal.
+Paid $200 using Stripe.
+```
+
+---
+
+### **Explanation of the Code**
+1. **PaymentGateway Interface:**  
+   ক্লায়েন্ট `PaymentGateway` ইন্টারফেস ব্যবহার করে পেমেন্ট প্রসেস করে।  
+
+2. **Adaptee Classes (PayPal, Stripe):**  
+   এগুলোর নিজস্ব পেমেন্ট প্রসেস মেথড আছে যা ক্লায়েন্ট সরাসরি ব্যবহার করতে পারে না।  
+
+3. **Adapter Classes:**  
+   - `PayPalAdapter`: PayPal-এর `sendPayment()` মেথডকে `pay()` এর মাধ্যমে ব্যবহারযোগ্য করে।  
+   - `StripeAdapter`: Stripe-এর `makePayment()` মেথডকে `pay()` এর মাধ্যমে ক্লায়েন্টের জন্য প্রস্তুত করে।  
+
+4. **Client:**  
+   ক্লায়েন্ট `processPayment()` ফাংশনের মাধ্যমে যেকোনো পেমেন্ট গেটওয়ে ব্যবহার করতে পারে, কারণ Adapters সমস্ত পেমেন্ট গেটওয়ের ইন্টারফেস統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統統
