@@ -85,5 +85,5 @@ PHP-তে সবচেয়ে বেশি ব্যবহৃত ডিজা
 - Laravel, Symfony-এর মতো ফ্রেমওয়ার্কগুলোর ভিত্তি এই ডিজাইন প্যাটার্নগুলোর উপর নির্ভরশীল।
 - কোড মেনটেইন করা সহজ হয় এবং বড় প্রজেক্টে রিইউজেবিলিটি বাড়ায়।
 
-Explain the 'Adapter Pattern' in detail. Give an example of how the 'Adapter Pattern' might be needed in real life?
+Explain the 'Facade Pattern' in detail. Give an example of how the 'Facade Pattern' might be needed in real life?
 -------------
